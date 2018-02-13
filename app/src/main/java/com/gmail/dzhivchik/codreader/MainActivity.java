@@ -1,8 +1,11 @@
 package com.gmail.dzhivchik.codreader;
 
+import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.hardware.Camera;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Display;
@@ -11,18 +14,35 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.TextView;
+
+import net.sourceforge.zbar.Config;
+import net.sourceforge.zbar.Image;
+import net.sourceforge.zbar.ImageScanner;
+import net.sourceforge.zbar.Symbol;
+import net.sourceforge.zbar.SymbolSet;
 
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
+    private ImageScanner scanner;
     private SurfaceView sv;
     private SurfaceHolder holder;
     private HolderCallback holderCallback;
     private Camera camera;
+    private Camera.PreviewCallback previewCb;
+    private Handler autoFocusHandler;
+    private FrameLayout preview;
+    private Image codeImage;
 
     final int CAMERA_ID = 0;
     final boolean FULL_SCREEN = true;
+
+    static {
+        System.loadLibrary("iconv");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +58,30 @@ public class MainActivity extends AppCompatActivity {
 
         holderCallback = new HolderCallback();
         holder.addCallback(holderCallback);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//        autoFocusHandler = new Handler();
+
+        scanner = new ImageScanner();
+        scanner.setConfig(0, Config.X_DENSITY, 3); //почему именно эти параметры нигде не указано
+        scanner.setConfig(0, Config.Y_DENSITY, 3);
+
+        Camera.PreviewCallback previewCb = new Camera.PreviewCallback() {
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                String lastScannedCode = null;
+                codeImage.setData(data);
+                int result = scanner.scanImage(codeImage);
+                System.out.println(result);
+                if (result != 0) {
+                    SymbolSet syms = scanner.getResults();
+                    for (Symbol sym : syms) {
+                        lastScannedCode = sym.getData();
+                    }
+                }
+                TextView info = (TextView) findViewById(R.id.result);
+                info.setTextColor(Color.WHITE);
+                info.setText(lastScannedCode);
+            }
+        };
     }
 
     @Override
@@ -168,4 +212,5 @@ public class MainActivity extends AppCompatActivity {
         result = result % 360;
         camera.setDisplayOrientation(result);
     }
+
 }

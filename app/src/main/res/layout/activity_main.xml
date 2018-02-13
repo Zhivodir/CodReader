@@ -13,4 +13,18 @@
         android:layout_gravity="center">
     </SurfaceView>
 
+    <!--<FrameLayout-->
+        <!--android:id="@+id/cameraPreview"-->
+        <!--android:layout_width="200dip"-->
+        <!--android:layout_height="200dip"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:layout_marginTop="20dip"-->
+        <!--android:background="@android:color/white" />-->
+
+    <TextView
+        android:id="@+id/result"
+        android:textSize="38sp"
+        android:layout_width="match_parent"
+        android:layout_height="200dip" />
+
 </android.support.constraint.ConstraintLayout>
