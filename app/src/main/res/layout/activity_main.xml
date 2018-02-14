@@ -1,30 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.gmail.dzhivchik.codreader.MainActivity">
+    android:background="@android:color/darker_gray">
 
-    <SurfaceView
-        android:id="@+id/surfaceView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
-    </SurfaceView>
-
-    <!--<FrameLayout-->
-        <!--android:id="@+id/cameraPreview"-->
-        <!--android:layout_width="200dip"-->
-        <!--android:layout_height="200dip"-->
-        <!--android:layout_gravity="center"-->
-        <!--android:layout_marginTop="20dip"-->
-        <!--android:background="@android:color/white" />-->
+    <FrameLayout
+        android:id="@+id/cameraPreview"
+        android:layout_width="200dip"
+        android:layout_height="200dip"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dip"
+        android:background="@android:color/white" />
 
     <TextView
-        android:id="@+id/result"
-        android:textSize="38sp"
-        android:layout_width="match_parent"
-        android:layout_height="200dip" />
+        android:id="@+id/scanText"
+        android:text="@string/scan_process_label"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_margin="10dip"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@android:color/black" />
 
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>
+
