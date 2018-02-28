@@ -23,5 +23,13 @@
         android:layout_gravity="center_horizontal"
         android:textColor="@android:color/black" />
 
+    <TextView
+        android:id="@+id/tvInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dip"
+        android:layout_gravity="center_horizontal"
+        android:text="Info"/>
+
 </LinearLayout>
 

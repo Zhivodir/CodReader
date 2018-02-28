@@ -8,18 +8,14 @@ import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
-
 import net.sourceforge.zbar.Config;
 import net.sourceforge.zbar.Image;
 import net.sourceforge.zbar.ImageScanner;
 import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
+
 
 public class MainActivity extends Activity {
     private static final int WHITE = 0xFFFFFFFF;
@@ -29,13 +25,13 @@ public class MainActivity extends Activity {
     private Handler autoFocusHandler;
     private FrameLayout preview;
     private TextView scanText;
-    private ImageView bar_code;
-    private EditText code_for_bar;
     private ImageScanner scanner;
     private boolean barcodeScanned = false;
     private boolean previewing = true;
     private String lastScannedCode;
     private Image codeImage;
+    private OperationWithServer connection;
+    private TextView tvInfo;
 
     static {
         System.loadLibrary("iconv");
@@ -48,10 +44,10 @@ public class MainActivity extends Activity {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-
         autoFocusHandler = new Handler();
 
         preview = (FrameLayout) findViewById(R.id.cameraPreview);
+        tvInfo = (TextView) findViewById(R.id.tvInfo);
 
 
         /* Instance barcode scanner */
@@ -122,7 +118,6 @@ public class MainActivity extends Activity {
 
     PreviewCallback previewCb = new PreviewCallback() {
         public void onPreviewFrame(byte[] data, Camera camera) {
-//            Log.d("CameraTestActivity", "onPreviewFrame data length = " + (data != null ? data.length : 0));
             codeImage.setData(data);
             int result = scanner.scanImage(codeImage);
             if (result != 0) {
@@ -132,6 +127,8 @@ public class MainActivity extends Activity {
                     if (lastScannedCode != null) {
                         scanText.setText(getString(R.string.scan_result_label) + lastScannedCode);
                         barcodeScanned = true;
+                        connection = new OperationWithServer(lastScannedCode);
+                        tvInfo.setText(connection.getResponse());
                     }
                 }
             }
@@ -146,3 +143,6 @@ public class MainActivity extends Activity {
         }
     };
 }
+
+
+
