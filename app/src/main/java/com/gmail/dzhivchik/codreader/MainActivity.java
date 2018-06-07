@@ -6,6 +6,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.FrameLayout;
@@ -16,6 +17,19 @@ import net.sourceforge.zbar.ImageScanner;
 import net.sourceforge.zbar.Symbol;
 import net.sourceforge.zbar.SymbolSet;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MainActivity extends Activity {
     private static final int WHITE = 0xFFFFFFFF;
@@ -25,13 +39,15 @@ public class MainActivity extends Activity {
     private Handler autoFocusHandler;
     private FrameLayout preview;
     private TextView scanText;
+    private TextView tvInfo;
+
     private ImageScanner scanner;
     private boolean barcodeScanned = false;
     private boolean previewing = true;
     private String lastScannedCode;
     private Image codeImage;
     private OperationWithServer connection;
-    private TextView tvInfo;
+    private String response;
 
     static {
         System.loadLibrary("iconv");
@@ -119,6 +135,7 @@ public class MainActivity extends Activity {
     PreviewCallback previewCb = new PreviewCallback() {
         public void onPreviewFrame(byte[] data, Camera camera) {
             codeImage.setData(data);
+            RequestTask request = new RequestTask();
             int result = scanner.scanImage(codeImage);
             if (result != 0) {
                 SymbolSet syms = scanner.getResults();
@@ -127,8 +144,10 @@ public class MainActivity extends Activity {
                     if (lastScannedCode != null) {
                         scanText.setText(getString(R.string.scan_result_label) + lastScannedCode);
                         barcodeScanned = true;
-                        connection = new OperationWithServer(lastScannedCode);
-                        tvInfo.setText(connection.getResponse());
+//                        new RequestTask().execute("http://app.bareks.com.ua/bareks_copy/hs/info/getkode?Article=" + lastScannedCode);
+                        request.execute("http://dzstore.herokuapp.com/test2?code=" + lastScannedCode );
+                        TextView tvInfo = (TextView) findViewById(R.id.tvInfo);
+                        tvInfo.setText(response);
                     }
                 }
             }
@@ -142,6 +161,36 @@ public class MainActivity extends Activity {
             autoFocusHandler.postDelayed(doAutoFocus, 1000);
         }
     };
+
+    class RequestTask extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            try {
+                //создаем запрос на сервер
+                DefaultHttpClient hc = new DefaultHttpClient();
+                hc.getCredentialsProvider()
+                        .setCredentials(new AuthScope("dzstore.herokuapp.com", AuthScope.ANY_PORT),
+                                new UsernamePasswordCredentials("Guest", String.valueOf(123)));
+                ResponseHandler<String> res = new BasicResponseHandler();
+                //он у нас будет посылать post запрос
+                HttpPost postMethod = new HttpPost(params[0]);
+//                //будем передавать два параметра
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+//                //передаем параметры из наших текстбоксов
+                nameValuePairs.add(new BasicNameValuePair("code", lastScannedCode));
+//                //собераем их вместе и посылаем на сервер
+                postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                //получаем ответ от сервера
+                response = hc.execute(postMethod, res);
+
+            } catch (Exception e) {
+                System.out.println("Exp=" + e);
+            }
+            return null;
+        }
+    }
 }
 
 
